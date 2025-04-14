@@ -75,7 +75,7 @@ assign is_ldcr =
      else any_cycleroute
 
 assign isbike = or bicycle_road=yes or bicycle=yes or or bicycle=permissive bicycle=designated lcn=yes
-assign isbikelane = or or cycleway=lane cycleway:left=lane cycleway:right=lane
+assign isbikelane = or cycleway=lane or cycleway:left=lane cycleway:right=lane
 assign ispaved = surface=paved|asphalt|concrete|paving_stones|sett
 assign isunpaved = not or surface= or ispaved surface=fine_gravel|cobblestone
 assign probablyGood = or ispaved and ( or isbike highway=footway ) not isunpaved
@@ -278,9 +278,16 @@ assign costfactor
   else if ( route=ferry   ) then ( if allow_ferries then 5.67 else 10000 )
 
   #
+  # handle long-distance cycle-routes.
+  #
+  else if ( is_ldcr ) then 1                   # always treated as perfect (=1)
+  else
+  add ( if stick_to_cycleroutes then 0.5 else 0 )  # everything else somewhat up
+
+  #
   # some other highway types
   #
-  else if ( highway=pedestrian                ) then 3
+  if      ( highway=pedestrian                ) then 3
   else if ( highway=bridleway                 ) then 5
   else if ( highway=cycleway                  ) then 1
   else if ( isresidentialorliving             ) then ( if isunpaved then 1.5 else 1.1 )
@@ -302,13 +309,18 @@ assign costfactor
   )
 
   #
+  # When avoiding unsafe ways, avoid highways without a bike hint
+  #
+  else add ( if ( and avoid_unsafe not isbike ) then 2 else 0 )
+
+  #
   # actuals roads are o.k. if we have a bike hint
   #
-  else if ( highway=trunk|trunk_link         ) then ( if isbike then 2 else if isbikelane then 5 else 10  )
-  else if ( highway=primary|primary_link     ) then ( if isbike then 1.6 else if isbikelane then 4 else  8  )
-  else if ( highway=secondary|secondary_link ) then ( if isbike then 1.2 else if isbikelane then 3.5 else 6 )
-  else if ( highway=tertiary|tertiary_link   ) then ( if isbike then 1.2 else if isbikelane then 3 else 4 )
-  else if ( highway=unclassified             ) then ( if isbike then 1.2 else if isbikelane then 3 else 4 )
+       if ( highway=trunk|trunk_link         ) then ( if isbike then 3 else if isbikelane then 6 else 10  )
+  else if ( highway=primary|primary_link     ) then ( if isbike then 2.5 else if isbikelane then 5 else 8 )
+  else if ( highway=secondary|secondary_link ) then ( if isbike then 2 else if isbikelane then 4 else 6 )
+  else if ( highway=tertiary|tertiary_link   ) then ( if isbike then 1.5 else if isbikelane then 3.5 else 5 )
+  else if ( highway=unclassified             ) then ( if isbike then 1.2 else if isbikelane then 2.5 else 3.5 )
 
   #
   # default for any other highway type not handled above
