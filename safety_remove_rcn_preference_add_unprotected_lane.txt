@@ -67,11 +67,12 @@ assign nodeaccessgranted =
      if any_cycleroute then true
      else lcn=yes
 
-assign isbike = or bicycle_road=yes or bicycle=yes or bicycle=permissive bicycle=designated
-assign isbikelane = or cycleway=lane or cycleway:left=lane cycleway:right=lane
+assign isbike = or bicycle_road=yes or bicycle=designated or bicycle=permissive bicycle=yes
+assign isbike_unprotected = or cycleway=lane or cycleway:left=lane cycleway:right=lane
+assign isbike_protected = or cycleway=track or cycleway:left=track cycleway:right=track
 assign ispaved = surface=paved|asphalt|concrete|paving_stones|sett
 assign isunpaved = not or surface= or ispaved surface=fine_gravel|cobblestone
-assign probablyGood = or ispaved and ( or isbike highway=footway ) not isunpaved
+assign probablyGood = or ispaved and ( or isbike_unprotected highway=footway ) not isunpaved
 
 
 #
@@ -298,11 +299,11 @@ assign costfactor
   #
   # actuals roads are o.k. if we have a bike hint
   #
-  else if ( highway=trunk|trunk_link                              ) then ( if isbike then 3 else if isbikelane then 6 else 10  )
-  else if ( highway=primary|primary_link                          ) then ( if isbike then 2.5 else if isbikelane then 5 else 8 )
-  else if ( highway=secondary|secondary_link                      ) then ( if isbike then 2 else if isbikelane then 4 else 6 )
-  else if ( highway=tertiary|tertiary_link                        ) then ( if isbike then 1.5 else if isbikelane then 3.5 else 5 )
-  else if ( or isresidentialorliving highway=unclassified|service ) then ( if isbike then 1.2 else if isbikelane then 2.5 else 3.5 )
+  else if ( highway=trunk|trunk_link                              ) then ( if isbike_protected then 3 else if isbike_unprotected then 6 else 10  )
+  else if ( highway=primary|primary_link                          ) then ( if isbike_protected then 2.5 else if isbike_unprotected then 5 else 8 )
+  else if ( highway=secondary|secondary_link                      ) then ( if isbike_protected then 2 else if isbike_unprotected then 4 else 6 )
+  else if ( highway=tertiary|tertiary_link                        ) then ( if isbike_protected then 1.5 else if isbike_unprotected then 3.5 else 5 )
+  else if ( or isresidentialorliving highway=unclassified|service ) then ( if isbike_protected then 1.2 else if isbike_unprotected then 2.5 else 3.5 )
 
   #
   # default for any other highway type not handled above
