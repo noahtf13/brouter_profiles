@@ -11,8 +11,6 @@ assign validForBikes = true
 # Use the following switches to change behaviour
 assign   allow_steps              = true   # %allow_steps% | Set false to disallow steps | boolean
 assign   allow_ferries            = true   # %allow_ferries% | Set false to disallow ferries | boolean
-assign   ignore_cycleroutes       = false  # %ignore_cycleroutes% | Set true for better elevation results | boolean
-assign   stick_to_cycleroutes     = false  # %stick_to_cycleroutes% | Set true to just follow cycleroutes | boolean
 
 assign   consider_noise           = false  # %consider_noise% | Activate to prefer a low-noise route | boolean
 assign   consider_river           = false  # %consider_river% | Activate to prefer a route along rivers, lakes, etc. | boolean
@@ -69,10 +67,6 @@ assign nodeaccessgranted =
      if any_cycleroute then true
      else lcn=yes
 
-assign is_ldcr =
-     if ignore_cycleroutes then false
-     else any_cycleroute
-
 assign isbike = or bicycle_road=yes or bicycle=yes or bicycle=permissive bicycle=designated
 assign isbikelane = or cycleway=lane or cycleway:left=lane cycleway:right=lane
 assign ispaved = surface=paved|asphalt|concrete|paving_stones|sett
@@ -86,9 +80,7 @@ assign probablyGood = or ispaved and ( or isbike highway=footway ) not isunpaved
 # (Suppressing turncost while following longdistance-cycleways
 # makes them a little bit more magnetic)
 #
-assign turncost = if is_ldcr then 0
-                  else if junction=roundabout then 0
-                  else 90
+assign turncost = 90
 
 
 #
@@ -279,9 +271,7 @@ assign costfactor
   #
   # handle long-distance cycle-routes.
   #
-  else if ( is_ldcr ) then 1                   # always treated as perfect (=1)
-  else
-  add ( if stick_to_cycleroutes then 0.5 else 0.05 )  # everything else somewhat up
+  else add ( if not any_cycleroute then 0.05 else 0 )
 
   #
   # some other highway types
